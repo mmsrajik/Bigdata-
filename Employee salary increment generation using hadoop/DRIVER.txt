@@ -22,16 +22,16 @@ public class SalaryInc
 	Path outputDir = new Path("hdfs://localhost:9000/user/jivesh/output/");
 	
 	Configuration conf = new Configuration();
-	// add files to cache 
+	
 	DistributedCache.addCacheFile(new URI("hdfs://localhost:9000/user/jivesh/designation.txt"), conf);
 
 	Job job = new Job(conf, "Salary Increment");
 
-	//name of driver class
+	
 	job.setJarByClass(SalaryInc.class);
-	//name of Mapper class
+	
 	job.setMapperClass(SalaryIncMapper.class);
-	//name of Reducer class
+	
 	job.setReducerClass(SalaryIncReducer.class);
 
 	job.setOutputKeyClass(Text.class);
