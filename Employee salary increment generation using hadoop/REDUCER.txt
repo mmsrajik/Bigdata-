@@ -8,8 +8,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 public class SalaryIncReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable>
 {
-   // Developer [ value_list ]
-    @Override
+   
     protected void reduce(Text key, Iterable<DoubleWritable> values, Context context)throws IOException, java.lang.InterruptedException
     {
 
@@ -18,7 +17,7 @@ public class SalaryIncReducer extends Reducer<Text, DoubleWritable, Text, Double
 	
 	Iterator<DoubleWritable> valuesIter = values.iterator();
 
-	/* For each store location */
+	
 	while (valuesIter.hasNext())
 	{
 	    count++;
@@ -26,7 +25,7 @@ public class SalaryIncReducer extends Reducer<Text, DoubleWritable, Text, Double
 	}
 
 	double avgInc = totalIncrement/count;
-	           /* designation, average_increment */
+	          
 	context.write(key, new DoubleWritable(avgInc));
     }
 }
