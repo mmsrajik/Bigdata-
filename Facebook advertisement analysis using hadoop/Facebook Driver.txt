@@ -19,11 +19,11 @@ public class FacebookDriver
 		Configuration conf = new Configuration();
 		Job job = new Job(conf, "Facebook analysis");
 
-		// name of driver class
+		
 		job.setJarByClass(FacebookDriver.class);
-		// name of mapper class
+		
 		job.setMapperClass(FacebookMapper.class);
-		// name of reducer class
+		
 		job.setReducerClass(FacebookReducer.class);
 					
 		job.setOutputKeyClass(Text.class);
