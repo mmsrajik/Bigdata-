@@ -19,7 +19,7 @@ public class FraudWritable implements Writable
 	set("", "", "no", "");
     }
     
-     /* getters and setters for custom values */
+     
     public void set(String customerName, String receiveDate, String returned, String returnDate) 
     {
 	this.customerName = customerName;
@@ -48,9 +48,8 @@ public class FraudWritable implements Writable
     	return this.returnDate;
     }
         
-    // Mandatory functions for Hadoop to know how to write values for this class
-    
-    @Override
+   
+
     public void write(DataOutput out) throws IOException 
     {
 	WritableUtils.writeString(out, this.customerName);
@@ -58,8 +57,7 @@ public class FraudWritable implements Writable
 	out.writeBoolean(this.returned);
 	WritableUtils.writeString(out, this.returnDate);
     }
-    // Mandatory functions for Hadoop to know how to read values for this class
-    @Override
+   
     public void readFields(DataInput in) throws IOException
     {
 	this.customerName = WritableUtils.readString(in);
