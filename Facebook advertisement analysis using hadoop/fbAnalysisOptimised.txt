@@ -1,0 +1,160 @@
+package fbstd;
+import java.io.IOException;
+
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+
+import org.apache.hadoop.mapreduce.Reducer;
+
+public class fbanssd 
+{
+	public static void main(String[] args) throws IOException,	ClassNotFoundException, InterruptedException 
+	{
+
+		//Path input_path = new Path("hdfs://localhost:9000/user/jivesh/fb");
+		//Path output_dir = new Path("hdfs://localhost:9000/user/jivesh/output");
+ 
+		
+		Configuration conf = new Configuration();
+		Job job = Job.getInstance(conf, "Facebook analysis");
+
+	
+		job.setJarByClass(fbanssd.class);
+		
+		job.setMapperClass(FacebookMapper.class);
+		
+		job.setReducerClass(FacebookReducer.class);
+					
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(Text.class);
+
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		//output_dir.getFileSystem(job.getConfiguration()).delete(output_dir,	true);
+
+		//job.waitForCompletion(true);
+		
+		System.exit(job.waitForCompletion(true) ? 0 : 1);
+	}
+	
+
+	
+
+	
+	public static class FacebookMapper extends Mapper<LongWritable, Text, Text, Text>
+	{
+		 
+		    //@Override
+		    public void map(LongWritable key, Text value, Context c)	throws IOException, java.lang.InterruptedException
+		    {
+
+			String line = value.toString();
+			
+			String[] words = line.split(",");       
+
+			
+			c.write(new Text(words[3]), new Text (words[2] + "," + words[4] + "," +  words[5]));
+		    }   
+		}
+
+	
+
+
+
+
+	public static class FacebookReducer  extends Reducer<Text, Text, Text, Text>
+	{
+		
+	    //@Override
+	    public void reduce(Text key, Iterable<Text> values, Context c)throws IOException, java.lang.InterruptedException
+	    {
+	          
+		HashMap<String, String> cityData = new HashMap<String, String>();  
+		
+		Iterator<Text> itr = values.iterator();
+	
+		while (itr.hasNext())
+		{
+		    String f = itr.next().toString();      
+
+		    String[] words = f.split(",");                
+		    
+		    String location = words[0].trim();            
+		    
+		    int clickCount = Integer.parseInt(words[1]);   
+		    
+		    int conversionCount = Integer.parseInt(words[2]);   
+		    
+		    Double succRate = new Double(conversionCount/(clickCount*1.0)*100);   
+
+		    if (cityData.containsKey(location))
+		    {
+		    String s1 = cityData.get(location);  
+			String[] hValues = s1.split(",");                    
+			
+			 String str=hValues[2];
+			 
+			 
+			Double totalSuccRate = Double.parseDouble(hValues[0]) + succRate;    
+			int totalCount = Integer.parseInt(hValues[1]) + 1;     
+			
+			String temp=String.valueOf(succRate);
+            str=str + "," + temp;
+			
+			
+			cityData.put(location, totalSuccRate + "," + totalCount + "," + str);
+
+		    }else
+		    {
+		    	String str=String.valueOf(succRate);
+			cityData.put(location, succRate + ",1" + "," + str);
+		    }
+		}
+	            System.out.println(cityData.toString());
+		for (Map.Entry<String, String> e : cityData.entrySet())        
+		{
+		    String[] V1 = e.getValue().split(",");        
+		    Double avgSccRate = Double.parseDouble(V1[0])/Integer.parseInt(V1[1]);
+		    
+		    
+		    String[] narr = V1[2].split(","); 
+		    int n = narr.length;
+		    double arr[]=new double[n];
+		    for(int i=0;i<n;i++)
+		    {
+		    arr[i]=Double.parseDouble(narr[i]);
+		    }
+		    
+		    
+		    
+		    
+		    
+		    double mean= avgSccRate;
+		    double sqDiff = 0; 
+	        for (int i = 0; i < n; i++)  
+	            sqDiff += (arr[i] - mean) *  
+	                      (arr[i] - mean); 
+	        
+	        double variance = (double)sqDiff /n ; 
+		    
+	        double sdvalue=  Math.sqrt(variance); 
+		    
+		    
+		    c.write(key, new Text(e.getKey() + "," + sdvalue));
+		}
+	    }
+	}
+
+	
+	
+}
